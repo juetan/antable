@@ -1,0 +1,20 @@
+
+.an-table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.an-table-toolbar-divider {
+  flex: 1
+}
+
+.an-table-inline-search .arco-form-item {
+  margin-bottom: 0;
+  margin-right: 12px;
+}
+
+.an-table-inline-search-submit {
+  margin-right: 0!important;
+}
