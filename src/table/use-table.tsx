@@ -48,8 +48,5 @@ AnTable.setConfig({
 })
 
 export function useTable(options: UseTableOptions | ((table: AnTable) => UseTableOptions)) {
-  const table = new AnTable(options)
-  const component = Object.create(table) as AnTable
-  ;(component as any).callParal('onComponent', component)
-  return component
+  return new AnTable(options)
 }

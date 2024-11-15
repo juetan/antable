@@ -70,6 +70,7 @@ export abstract class AnComponent<
     this.callParal('onOptionsBefore')
     this.callParal('onOptions', this.options)
     this.callParal('onOptionsAfter')
+    return this.createComponent()
   }
 
   private initState() {
@@ -89,8 +90,14 @@ export abstract class AnComponent<
     const globalCfg = (this as any).constructor.config ?? {}
     this.options.config ??= {}
     this.options.config = defaultsDeep(this.options.config, globalCfg)
-    this.options.config!.plugins = undefined
+    delete this.options.config?.plugins
     return this.options.config as C
+  }
+
+  private createComponent() {
+    const component = Object.create(this)
+    this.callParal('onComponent', component)
+    return component;
   }
 
   setup() {

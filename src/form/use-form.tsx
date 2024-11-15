@@ -142,8 +142,5 @@ AnForm.setConfig({
 })
 
 export function useForm(options: UseFormOptions | ((form: AnForm) => UseFormOptions)) {
-  const form = new AnForm(options)
-  const component = Object.create(form) as AnForm
-  ;(component as any).callParal('onComponent', component)
-  return component
+  return new AnForm(options)
 }

@@ -28,7 +28,6 @@ const showColumn = ref(false)
 const ins = ref(null)
 
 const FeForm = useForm({
-  model: {},
   items: [
     {
       field: 'todo',
