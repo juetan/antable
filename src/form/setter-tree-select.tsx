@@ -32,11 +32,7 @@ declare module './form' {
 
 function render(this: AnForm, item: AnFormItem, model: Recordable) {
   return (
-    <TreeSelect
-      {...item.setterProps}
-      v-model={model[item.field]}
-      placeholder={this.t(item.placeholder)}
-    >
+    <TreeSelect {...item.setterProps} v-model={model[item.field]} placeholder={this.t(item.placeholder)}>
       {{ ...item.setterSlots }}
     </TreeSelect>
   )
@@ -44,12 +40,12 @@ function render(this: AnForm, item: AnFormItem, model: Recordable) {
 
 export default defineFormPlugin({
   name: 'treeSelect',
-  onOptionsItem(item) {
+  onOptionsItemBefore(item) {
     if (item.setter !== 'treeSelect') {
       return
     }
-    defaultsDeep(item, this.config.treeSelect)
+    item = defaultsDeep(item, this.config.treeSelect)
     item.itemSlots ??= {}
-    item.itemSlots.default = render.bind(this)
+    item.itemSlots.default ??= render.bind(this)
   },
 })

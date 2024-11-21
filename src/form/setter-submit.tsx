@@ -1,6 +1,5 @@
 import { Button } from '@arco-design/web-vue'
 import { defaultsDeep } from 'lodash-es'
-import { Recordable } from '../core'
 import type { AnFormItem } from './form'
 import { AnForm, defineFormPlugin } from './form'
 
@@ -21,11 +20,10 @@ declare module './form' {
   }
 }
 
-function render(this: AnForm, item: AnFormItem, model: Recordable) {
-  const onClick = () => this.state.submit?.(model)
+function render(this: AnForm, item: AnFormItem) {
   return (
     <>
-      <Button type="primary" class="mr-3" onClick={onClick}>
+      <Button type="primary" class="mr-3" onClick={this.submit.bind(this)}>
         {item.setterProps?.submitText}
       </Button>
       <Button style="margin-left: 12px">{item.setterProps?.resetText}</Button>
@@ -39,8 +37,8 @@ export default defineFormPlugin({
     if (item.setter !== 'submit') {
       return
     }
-    defaultsDeep(target, this.config.submit)
+    target = defaultsDeep(target, this.config.submit)
     target.itemSlots ??= {}
-    target.itemSlots.default ??= render.bind(this) 
-  },
+    target.itemSlots.default ??= render.bind(this)
+  }
 })

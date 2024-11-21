@@ -1,4 +1,3 @@
-export * from './component'
-export * from './config'
+export * from './core'
 export * from './utils'
 

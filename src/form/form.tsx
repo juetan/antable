@@ -1,15 +1,13 @@
-import { AnComponent, AnConfig, AnOption, AnPlugin, AnState, applyConfigTo, DeepPartial } from '../core'
+import { AnCore, AnConfig, AnOption, AnPlugin, AnState, DeepPartial } from '../core'
 
 export interface AnFormPlugin extends AnPlugin<AnForm, UseFormOptions, AnFormConfig> {}
-export interface AnFormConfig extends AnConfig<AnFormPlugin, AnFormState> {}
+export interface AnFormConfig extends AnConfig<AnFormPlugin> {}
 export interface AnFormState extends AnState {}
 export interface UseFormOptions extends AnOption<AnFormPlugin, AnFormConfig> {}
 export const defineFormPlugin = (plugin: AnFormPlugin) => plugin
-export class AnForm extends AnComponent<UseFormOptions, AnFormState, AnFormConfig, AnFormPlugin> {
-  static readonly config: AnFormConfig
-  static readonly usePlugin: (...plugins: AnFormPlugin[]) => void
-  static readonly setConfig: (config: DeepPartial<AnFormConfig>) => void
-  static readonly t: (value: string, ...args: any[]) => string
-  static { applyConfigTo(this) }
-}
 
+export class AnForm extends AnCore<UseFormOptions, AnFormState, AnFormConfig, AnFormPlugin> {
+  static readonly config = {} as AnFormConfig
+  static readonly setConfig: (config: DeepPartial<AnFormConfig>) => void
+  static readonly usePlugin: (...plugins: AnFormPlugin[]) => void
+}

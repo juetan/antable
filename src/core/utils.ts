@@ -1,8 +1,22 @@
+import { defaultsDeep, isArray, mergeWith } from 'lodash-es'
 import { MaybeRefOrGetter, toValue } from 'vue'
 
 export type MaybePromise<T = void> = T | Promise<T>
 export type Recordable = Record<string, any>
 export type DeepPartial<T> = T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T
+
+export const mergeOrDefaults = (target: any, source: any, mode?: 'defaults' | 'merge') => {
+  if (mode === 'defaults') {
+    defaultsDeep(target, source)
+    return
+  }
+  mergeWith(target, source, (val, argVal) => {
+    if (isArray(val) && isArray(argVal)) {
+      val.push(...argVal)
+      return val
+    }
+  })
+}
 
 export const toBool = (value: MaybeRefOrGetter<boolean> | ((...args: any[]) => boolean), ...args: any[]) => {
   return Boolean(typeof value === 'function' ? value(...args) : toValue(value))

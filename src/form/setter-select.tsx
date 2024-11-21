@@ -2,15 +2,10 @@ import { Select, SelectInstance } from '@arco-design/web-vue'
 import { defaultsDeep } from 'lodash-es'
 import { onMounted } from 'vue'
 import { MaybePromise, Recordable } from '../core'
-import type { AnFormItem, UseFormItemSelect, UseFormSelectItemOptions } from './form'
+import type { AnFormItem, UseFormSelectItemOptions } from './form'
 import { AnForm, defineFormPlugin } from './form'
 
 declare module './form' {
-  interface AnFormSelectOption {
-    label: string
-    value: any
-    raw?: any
-  }
   interface UseFormSelectItemOptions {
     /**
      * 用于加载数据的函数，应返回数组
@@ -21,32 +16,31 @@ declare module './form' {
      *   return data.map(item => {
      *     label: item.nickename,
      *     value: item.id,
-     *     raw: item
      *   })
      * }
      * ```
      */
-    load?: (item: UseFormItemSelect) => MaybePromise<AnFormSelectOption[]>
+    load?: (item: AnFormItem) => MaybePromise<AnFormSelectOption[]>
     /**
-     * 是否在 vue 的生命周期里自动加载
-     * @example
+     * 什么情况下加载
+     * @default
      * ```ts
-     * 'mounted'
+     * 'setup'
      * ```
      */
     loadOn?: 'mounted' | 'setup' | false
-    loader?: any
+    custom?: boolean
+  }
+  interface AnFormSelectOption {
+    label: string
+    value: any
+    raw?: any
   }
   interface UseFormItemSelect extends UseFormItemBase {
-    options?:
-      | AnFormSelectOption[]
-      | UseFormSelectItemOptions['load']
-      | UseFormSelectItemOptions
+    options?: AnFormSelectOption[] | UseFormSelectItemOptions['load'] | UseFormSelectItemOptions
     setter: 'select'
     setterProps?: SelectInstance['$props']
-    setterSlots?: AnFormItemSlotMapping<
-      'prepend' | 'append' | 'suffix' | 'prefix'
-    >
+    setterSlots?: AnFormItemSlotMapping<'prepend' | 'append' | 'suffix' | 'prefix'>
   }
   interface UseFormItems {
     select: UseFormItemSelect
@@ -55,38 +49,43 @@ declare module './form' {
     select: UseFormItemSelect
     selectOpt: UseFormSelectItemOptions
   }
+  interface AnForm {
+    loadOption: (field: string) => void
+    loadOptions: () => void
+  }
 }
 
-function parseItemOptions(item: UseFormItemSelect) {
-  const defaults = AnForm.config.selectOpt
-  const options: UseFormSelectItemOptions = defaultsDeep({}, defaults)
-  const rawOptions = item.options!
-  if (Array.isArray(rawOptions)) {
-    options.load = () => rawOptions
-  } else if (typeof rawOptions === 'function') {
-    options.load = rawOptions
-  } else if (typeof rawOptions === 'object') {
-    Object.assign(options, rawOptions)
-  }
-  return options
+AnForm.prototype.loadOption = async function (field) {
+  const item = this.state.items.find(i => i.field === field)
+  item && loadOption(item)
+}
+
+AnForm.prototype.loadOptions = function () {
+  this.state.items.forEach(loadOption)
 }
 
 function render(this: AnForm, item: AnFormItem, model: Recordable) {
   return (
-    <Select
-      {...(item.setterProps as any)}
-      v-model={model[item.field]}
-      placeholder={this.t(item.placeholder)}
-    >
+    <Select {...item.setterProps} v-model={model[item.field]} placeholder={this.t(item.placeholder)}>
       {{ ...item.setterSlots }}
     </Select>
   )
 }
 
-export async function loader(item: UseFormItemSelect) {
-  const options = item.options as UseFormSelectItemOptions
-  const res = await options.load?.(item)
-  item.setterProps!.options = res
+async function loadOption(item: AnFormItem) {
+  const options = item.shared.options as UseFormSelectItemOptions
+  if (!options) {
+    return
+  }
+  if (options.custom) {
+    return options.load?.(item)
+  }
+  if (options.load) {
+    const result = await options.load(item)
+    if (!Array.isArray(result)) return
+    item.setterProps ??= {}
+    item.setterProps.options = result
+  }
 }
 
 export default defineFormPlugin({
@@ -95,26 +94,38 @@ export default defineFormPlugin({
     if (item.setter !== 'select') {
       return
     }
-    if (item.options) {
-      item.options = parseItemOptions(item)
-    }
-    defaultsDeep(item, this.config.select)
+    item = defaultsDeep(item, this.config.select)
     item.itemSlots ??= {}
     item.itemSlots.default = render.bind(this)
+  },
+  onOptionsItem(item, target) {
+    if (item.setter !== 'select' || !item.options) {
+      return
+    }
+    const temp = defaultsDeep({}, this.config.selectOpt)
+    const options = item.options
+    if (Array.isArray(options)) {
+      temp.load = () => options
+    } else if (typeof options === 'function') {
+      temp.load = options
+    } else if (typeof options === 'object') {
+      Object.assign(temp, options)
+    }
+    target.shared.options = temp
   },
   onSetupItem(item) {
     if (item.setter !== 'select') {
       return
     }
-    const options = (item as UseFormItemSelect).options
+    const options = item.shared.options
     if (!options) {
       return
     }
-    const { loader, loadOn } = options as UseFormSelectItemOptions
-    if (loadOn === 'setup') {
-      loader?.(item)
-    } else if (loadOn === 'mounted') {
-      onMounted(() => loader?.(item))
+    if (options.loadOn === 'setup') {
+      return loadOption(item)
     }
-  },
+    if (options.loadOn === 'mounted') {
+      return onMounted(() => loadOption(item))
+    }
+  }
 })

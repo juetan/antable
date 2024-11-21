@@ -6,6 +6,10 @@ import tablePlugin from './plugin-table'
 import tableToolbarPlugin from './plugin-toolbar'
 import { AnTable, UseTableOptions } from './table'
 
+export function useTable(options: UseTableOptions | ((table: AnTable) => UseTableOptions)) {
+  return new AnTable(options)
+}
+
 AnTable.setConfig({
   name: 'AnTable',
   plugins: [
@@ -46,7 +50,3 @@ AnTable.setConfig({
   },
   update: {},
 })
-
-export function useTable(options: UseTableOptions | ((table: AnTable) => UseTableOptions)) {
-  return new AnTable(options)
-}

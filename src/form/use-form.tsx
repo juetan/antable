@@ -15,6 +15,10 @@ import formTextareaPlugin from './setter-textarea'
 import formTimePlugin from './setter-time'
 import formTreeSelectPlugin from './setter-tree-select'
 
+export function useForm(options: UseFormOptions | ((form: AnForm) => UseFormOptions)) {
+  return new AnForm(options)
+}
+
 AnForm.setConfig({
   name: 'AnForm',
   plugins: [
@@ -32,19 +36,18 @@ AnForm.setConfig({
     formTimePlugin,
     formDatePlugin,
     formDateRangePlugin,
-    formSubmitPlugin,
+    formSubmitPlugin
   ],
   formProps: {
-    layout: 'vertical',
+    layout: 'vertical'
   },
   item: {
     itemProps: {},
-    itemSlots: {},
+    itemSlots: {}
   },
   model: {
-    id: undefined,
+    id: undefined
   },
-  rules: {},
   modal: {
     title: '操作',
     width: 600,
@@ -55,92 +58,88 @@ AnForm.setConfig({
       closable: false,
       unmountOnClose: true,
       maskClosable: false,
-      visible: false,
-    },
+      visible: false
+    }
   },
   cascader: {
     placeholder: '请输入',
     setterProps: {
       allowClear: true,
-      expandTrigger: 'hover',
+      expandTrigger: 'hover'
     },
-    itemSlots: {},
+    itemSlots: {}
   },
   dateRange: {
     placeholder: '请输入',
     setterProps: {
-      allowClear: true,
+      allowClear: true
     },
-    itemSlots: {},
+    itemSlots: {}
   },
   date: {
     placeholder: '请输入',
     setterProps: {
-      allowClear: true,
+      allowClear: true
     },
-    itemSlots: {},
+    itemSlots: {}
   },
   input: {
     placeholder: '请输入',
     setterProps: {
-      allowClear: true,
+      allowClear: true
     },
-    itemSlots: {},
+    itemSlots: {}
   },
   number: {
     setterProps: {
       defaultValue: 0,
-      allowClear: true,
+      allowClear: true
     },
-    itemSlots: {},
+    itemSlots: {}
   },
   password: {
     placeholder: '请输入',
-    itemSlots: {},
+    itemSlots: {}
   },
   search: {
     placeholder: '请输入',
-    itemSlots: {},
+    itemSlots: {}
   },
   select: {
     placeholder: '请选择',
     setterProps: {
-      allowClear: true,
+      allowClear: true
     },
-    itemSlots: {},
+    itemSlots: {}
   },
   selectOpt: {
     loadOn: 'mounted',
-    loader: null,
+    custom: false
   },
   submit: {
     placeholder: '请输入',
     setterProps: {
       submitText: '提交',
-      resetText: '重置',
+      resetText: '重置'
     },
     itemProps: {
-      hideLabel: true,
+      hideLabel: true
     },
-    itemSlots: {},
+    itemSlots: {}
   },
   textarea: {
     placeholder: '请输入',
-    itemSlots: {},
+    itemSlots: {}
   },
   time: {
     placeholder: '请输入',
     setterProps: {
-      allowClear: true,
+      allowClear: true
     },
-    itemSlots: {},
+    itemSlots: {}
   },
   treeSelect: {
     placeholder: '请输入',
-    itemSlots: {},
-  },
+    itemSlots: {}
+  }
 })
-
-export function useForm(options: UseFormOptions | ((form: AnForm) => UseFormOptions)) {
-  return new AnForm(options)
-}

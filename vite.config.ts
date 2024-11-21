@@ -9,7 +9,7 @@ export default defineConfig({
     vuejsx(),
     dts({
       outDir: 'dist',
-      // rollupTypes: true
+      rollupTypes: true
     }),
   ],
   build: {

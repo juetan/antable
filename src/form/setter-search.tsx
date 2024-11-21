@@ -24,7 +24,7 @@ function render(this: AnForm, item: AnFormItem, model: Recordable) {
       {...item.setterProps}
       v-model={model[item.field]}
       // @ts-ignore
-      placeholder={AnForm.t(item.placeholder!)}
+      placeholder={this.t(item.placeholder)}
     >
       {{ ...item.setterSlots }}
     </InputSearch>
@@ -33,7 +33,7 @@ function render(this: AnForm, item: AnFormItem, model: Recordable) {
 
 export default defineFormPlugin({
   name: 'search',
-  onOptionsItem(item) {
+  onOptionsItemBefore(item) {
     if (item.setter !== 'password') {
       return
     }

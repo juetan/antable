@@ -20,11 +20,7 @@ declare module './form' {
 
 function render(this: AnForm, item: AnFormItem, model: Recordable) {
   return (
-    <TimePicker
-      {...item.setterProps}
-      v-model={model[item.field]}
-      placeholder={this.t(item.placeholder)}
-    >
+    <TimePicker {...item.setterProps} v-model={model[item.field]} placeholder={this.t(item.placeholder)}>
       {{ ...item.setterSlots }}
     </TimePicker>
   )
@@ -32,7 +28,7 @@ function render(this: AnForm, item: AnFormItem, model: Recordable) {
 
 export default defineFormPlugin({
   name: 'time',
-  onOptionsItem(item) {
+  onOptionsItemBefore(item) {
     if (item.setter !== 'time') {
       return
     }

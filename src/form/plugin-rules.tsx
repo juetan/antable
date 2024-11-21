@@ -1,5 +1,3 @@
-import { FieldRule } from '@arco-design/web-vue'
-import { AnForm, AnFormConfigRules, UseFormItem } from './form'
 
 export const rules = {
   required: {
@@ -44,17 +42,4 @@ export const rules = {
   },
 }
 
-export function processItemRules(item: UseFormItem) {
-  const rules: FieldRule[] = ((item.itemProps as any).rules ??= [])
-  const configRules = AnForm.config.rules
-  for (const rule of item.rules ?? []) {
-    if (typeof rule === 'string' && configRules[rule as keyof AnFormConfigRules]) {
-      rules.push(configRules[rule as keyof AnFormConfigRules])
-    } else {
-      rules.push(rule as FieldRule)
-    }
-  }
-  if (item.required) {
-    rules.unshift(configRules.required)
-  }
-}
+export function processItemRules() {}

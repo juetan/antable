@@ -29,11 +29,14 @@ function render(this: AnForm, item: AnFormItem, model: Recordable) {
 export default defineFormPlugin({
   name: 'input',
   onOptionsItemBefore(item) {
+    if (item.setter === void 0) {
+      item.setter = 'input' as any
+    }
     if (item.setter !== 'input') {
       return
     }
     defaultsDeep(item, this.config.input)
     item.itemSlots ??= {}
-    item.itemSlots.default = render.bind(this)
-  },
+    item.itemSlots.default ??= render.bind(this)
+  }
 })

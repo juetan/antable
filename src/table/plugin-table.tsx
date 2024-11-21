@@ -228,8 +228,8 @@ export default defineTablePlugin({
     options.tableProps ??= {}
     options.tableProps.ref = (el: any) => (this.state.tableRef = el)
     options.columns ??= []
-    const tableProps = defaultsDeep(options.tableProps, this.config.tableProps)
-    const tableSlots = defaultsDeep(options.tableSlots, this.config.tableSlots)
+    const tableProps = defaultsDeep((options.tableProps ??= {}), this.config.tableProps)
+    const tableSlots = defaultsDeep((options.tableSlots ??= {}), this.config.tableSlots)
     const dataed = parseData.call(this, options.data)
     const columns = options.columns.map(parseColumn.bind(this))
     this.setState({ tableProps, tableSlots, columns, dataed } as any)
@@ -240,10 +240,6 @@ export default defineTablePlugin({
       column.visibled = computed(() => toBool(column.visible ?? true, column))
     }
     this.state.columnsed = computed(() => this.state.columns.filter(i => i.visibled))
-  },
-  onComponent(component) {
-    component.name = this.options.name ?? this.config.name
-    component.setup = this.setup.bind(this)
   },
   onSetup() {
     const data = this.state.dataed

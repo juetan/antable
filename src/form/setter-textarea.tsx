@@ -20,11 +20,7 @@ declare module './form' {
 
 function render(this: AnForm, item: AnFormItem, model: Recordable) {
   return (
-    <Textarea
-      {...item.setterProps}
-      v-model={model[item.field]}
-      placeholder={this.t(item.placeholder)}
-    >
+    <Textarea {...item.setterProps} v-model={model[item.field]} placeholder={this.t(item.placeholder)}>
       {{ ...item.setterSlots }}
     </Textarea>
   )
@@ -36,8 +32,8 @@ export default defineFormPlugin({
     if (item.setter !== 'textarea') {
       return
     }
-    defaultsDeep(item, this.config.textarea)
+    item = defaultsDeep(item, this.config.textarea)
     item.itemSlots ??= {}
-    item.itemSlots.default = render.bind(this)
+    item.itemSlots.default ??= render.bind(this)
   },
 })
