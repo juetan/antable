@@ -18,12 +18,8 @@ declare module './form' {
   }
 }
 
-function render(this: AnForm, item: AnFormItem, model: Recordable) {
-  return (
-    <TimePicker {...item.setterProps} v-model={model[item.field]} placeholder={this.t(item.placeholder)}>
-      {{ ...item.setterSlots }}
-    </TimePicker>
-  )
+function render(item: AnFormItem) {
+  return <TimePicker {...item.setterProps}>{{ ...item.setterSlots }}</TimePicker>
 }
 
 export default defineFormPlugin({
@@ -34,6 +30,6 @@ export default defineFormPlugin({
     }
     defaultsDeep(item, this.config.time)
     item.itemSlots ??= {}
-    item.itemSlots.default = render.bind(this)
+    item.itemSlots.default = render
   },
 })

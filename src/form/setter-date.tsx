@@ -30,7 +30,7 @@ declare module './form' {
 
 function render(this: AnForm, item: AnFormItem, model: Recordable) {
   return (
-    <DatePicker {...item.setterProps} v-model={model[item.field]}>
+    <DatePicker {...item.setterProps}>
       {{ ...item.setterSlots }}
     </DatePicker>
   )
@@ -38,7 +38,7 @@ function render(this: AnForm, item: AnFormItem, model: Recordable) {
 
 export default defineFormPlugin({
   name: 'date',
-  onOptionsItem(item) {
+  onOptionsItemBefore(item) {
     if (item.setter !== 'date') {
       return
     }

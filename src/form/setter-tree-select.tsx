@@ -1,6 +1,5 @@
 import { TreeSelect, TreeSelectInstance } from '@arco-design/web-vue'
 import { defaultsDeep } from 'lodash-es'
-import { Recordable } from '../core'
 import type { AnFormItem } from './form'
 import { AnForm, defineFormPlugin } from './form'
 
@@ -30,9 +29,9 @@ declare module './form' {
   }
 }
 
-function render(this: AnForm, item: AnFormItem, model: Recordable) {
+function render(this: AnForm, item: AnFormItem) {
   return (
-    <TreeSelect {...item.setterProps} v-model={model[item.field]} placeholder={this.t(item.placeholder)}>
+    <TreeSelect {...item.setterProps}>
       {{ ...item.setterSlots }}
     </TreeSelect>
   )
@@ -44,7 +43,7 @@ export default defineFormPlugin({
     if (item.setter !== 'treeSelect') {
       return
     }
-    item = defaultsDeep(item, this.config.treeSelect)
+    defaultsDeep(item, this.config.treeSelect)
     item.itemSlots ??= {}
     item.itemSlots.default ??= render.bind(this)
   },

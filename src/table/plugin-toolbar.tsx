@@ -1,148 +1,164 @@
 import { Button, ButtonProps } from '@arco-design/web-vue'
-import { defaultsDeep } from 'lodash-es'
-import { computed, MaybeRef, MaybeRefOrGetter, VNodeChild } from 'vue'
-import { Recordable, toBool } from '../core'
-import type { AnTable, AnTableToolbarItem, UseTableToolbar, UseTableToolbarItem } from './table'
+import { defaultsDeep, isString } from 'lodash-es'
+import { computed, MaybeRefOrGetter, VNodeChild } from 'vue'
+import { toBool } from '../core'
+import { AnTable } from './table'
 import { defineTablePlugin } from './table'
 
-interface UseButton extends Omit<ButtonProps, 'disabled'> {
-  key?: string
-  icon?: string | ((item: UseButton) => VNodeChild)
-  text?: string | ((item: UseButton) => VNodeChild)
-  position?: 'left' | 'right' | number
-  order?: number
-  disable?: MaybeRefOrGetter<boolean> | ((item: UseButton) => boolean)
-  visible?: MaybeRefOrGetter<boolean> | ((item: UseButton) => boolean)
-  render?: (item: UseButton) => VNodeChild
+interface AnButton<T = any> {
+  /**
+   * 图标
+   * @example
+   * ```tsx
+   * icon: 'icon-edit'         // 使用 css 类名
+   * icon: () => <IconEdit />  // 使用 jsx 函数或 h 函数
+   * ```
+   */
+  icon?: string | ((item: T) => VNodeChild)
+  /**
+   * 显示文本
+   * @example
+   * ```tsx
+   * text: '修改'            // 使用字符串
+   * text: () => <MyEdit />  // 使用 jsx 函数或 h 函数
+   * ```
+   */
+  text?: string | ((item: T) => VNodeChild)
+  /**
+   * 排序
+   * @default
+   * ```ts
+   * 50
+   * ```
+   */
+  sort?: number
+  /**
+   * 按钮状态
+   * @example
+   * ```js
+   * 'warning'
+   * ```
+   */
+  status?: ButtonProps['status']
+  shape?: ButtonProps['shape']
+  buttonType?: ButtonProps['type']
+  /**
+   * 是否禁用
+   * @example
+   * ```ts
+   * true
+   * ```
+   */
+  disable?: MaybeRefOrGetter<boolean> | ((arg: T) => boolean)
+  /**
+   * 是否可见
+   * @example
+   * ```ts
+   * true
+   * ```
+   */
+  visible?: MaybeRefOrGetter<boolean> | ((arg: T) => boolean)
+  /**
+   * 额外的 props
+   */
+  extraProps?: Omit<ButtonProps, 'disabled' | 'status' | 'type' | 'status' | 'shape'>
+  /**
+   * 自定义渲染函数。注意：指定此参数，其他参数将无效。
+   * @example
+   * ```tsx
+   * () => <MyComponent />
+   * ```
+   */
+  render?: (props: T) => VNodeChild
   onClick?: () => void
 }
 
-export interface UseToolbarItems {
-  type1: UseButton
-  type2: () => VNodeChild
-}
-
-type TableButton = UseButton
-
 declare module './table' {
-  interface UseTableToolbarItem extends UseButton {}
-  interface AnTableToolbarItem {
-    key: string
-    order: number
-    props: Recordable
-    slots: Recordable
-    render: (item: AnTableToolbarItem) => VNodeChild
-    disable?: MaybeRefOrGetter<boolean> | ((item: AnTableToolbarItem) => boolean)
-    visible?: MaybeRefOrGetter<boolean> | ((item: AnTableToolbarItem) => boolean)
-  }
-  interface UseTableToolbar {
-    items?: UseTableToolbarItem[]
-  }
+  interface AnTableToolbarItem extends AnButton<AnTableToolbarItem> {}
   interface UseTableOptions {
-    toolbar?: UseTableToolbarItem[] | UseTableToolbar
-  }
-  interface AnTableStateToolbar {
-    items: AnTableToolbarItem[]
-    itemsed: MaybeRef<AnTableToolbarItem[]>
-    counted: number
+    /**
+     * 工具栏按钮
+     * @by toolbar
+     * @example
+     * ```ts
+     * text: '按钮',
+     * onClick: () => console.log('click')
+     * ```
+     */
+    toolbar?: AnTableToolbarItem[]
   }
   interface AnTableState {
-    toolbar: AnTableStateToolbar
+    toolbar: AnTableToolbarItem[]
+    toolbared: AnTableToolbarItem[]
   }
   interface AnTableConfigToolbar {
-    item: UseTableToolbarItem
-    itemDivider: UseTableToolbarItem
-    leftOrder: number
-    rightOrder: number
+    item: AnTableToolbarItem
   }
   interface AnTableConfig {
-    toolbarItem: UseTableToolbarItem
-    toolbarLeftOrder: number
-    toolbarRightOrder: number
-    toolbarOrder: number
-    toolbarDivider: UseTableToolbarItem
+    toolbarItem: AnTableToolbarItem
   }
   interface AnTablePlugin {
-    onOptionsToolbarItem?: (this: AnTable, item: UseTableToolbarItem) => AnTableToolbarItem | void
+    onOptionsToolbarItem?: (this: AnTable, item: AnTableToolbarItem, newItem: AnTableToolbarItem) => void
   }
 }
 
-function itemRender(this: AnTable, item: AnTableToolbarItem) {
+function itemRender(this: AnTable, item: AnButton) {
+  if (item.render) {
+    return item.render(item)
+  }
   return (
-    <Button {...item.props} disabled={toBool(item.disable ?? false, item)}>
-      {{ ...item.slots }}
+    <Button
+      {...item.extraProps}
+      disabled={toBool(item.disable ?? false, item)}
+      status={item.status}
+      shape={item.shape}
+      type={item.buttonType}
+      onClick={item.onClick}
+    >
+      {{
+        icon: item.icon,
+        default: item.text,
+      }}
     </Button>
   )
 }
 
-function render(this: AnTable) {
-  const itemsed = this.state.toolbar.itemsed as any[]
+function Toolbar(this: AnTable) {
+  const itemsed = this.state.toolbared
   if (!itemsed.length) {
     return null
   }
   return (
     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-      {itemsed.map(i => i.render?.(i))}
+      {itemsed.map(itemRender.bind(this))}
     </div>
   )
-}
-
-function parseItem(this: AnTable, item: UseTableToolbarItem) {
-  item = defaultsDeep(item, this.config.toolbarItem)
-  const { visible, disable, order, position, render, onClick, text, icon, ...props } = item
-  const newItem = { props, visible, order, disable, render: itemRender } as AnTableToolbarItem
-  if (item.onClick) {
-    newItem.props.onClick = () => item.onClick?.()
-  }
-  if (item.render) {
-    newItem.slots ??= {}
-    newItem.slots.default = item.render
-  }
-  if (item.text) {
-    newItem.slots ??= {}
-    newItem.slots.default = () => item.text
-  }
-  if (item.icon) {
-    newItem.slots ??= {}
-    newItem.slots.icon = () => item.icon
-  }
-  return newItem
-}
-
-const divider = {
-  order: 0,
-  render: () => <div style="flex: 1"></div>,
 }
 
 export default defineTablePlugin({
   name: 'toolbar',
   onOptions(options) {
-    if (!options.toolbar) {
-      return
+    const toolbar: AnButton[] = []
+    for (const item of options.toolbar ?? []) {
+      defaultsDeep(item, this.config.toolbarItem)
+      const text = item.text
+      const icon = item.icon
+      if (isString(text)) {
+        item.text = () => this.t(text as string)
+      }
+      if (isString(icon)) {
+        item.icon = () => <span class={icon} />
+      }
+      this.callParal('onOptionsToolbarItem', item, item)
+      toolbar.push(item)
     }
-    options.toolbar = Array.isArray(options.toolbar) ? { items: options.toolbar } : options.toolbar
-    options.toolbar.items ??= []
-    options.toolbar.items.push(divider)
-    const items = options.toolbar.items.map(parseItem.bind(this))
-    this.setState({ toolbar: { items } })
-    this.addChild(render.bind(this), 5)
+    toolbar.push({ sort: 50, render: () => <div style="flex: 1"></div> })
+    toolbar.sort((a, b) => (a.sort ?? 25) - (b.sort ?? 25))
+    this.setState({ toolbar })
+    this.addChild(Toolbar.bind(this), 5)
   },
   onOptionsAfter() {
-    this.state.toolbar.itemsed = computed(() => {
-      const items = this.state.toolbar.items.filter(i => toBool(i.visible ?? true, i))
-      items.sort((a, b) => (a.order ?? -1) - (b.order ?? -1))
-      return items
-    })
+    // @ts-ignore
+    this.state.toolbared = computed(() => this.state.toolbar.filter(i => toBool(i.visible ?? true, i)))
   },
 })
-
-export function finalToolbarOption(rawToolbar?: TableButton[] | UseTableToolbar): UseTableToolbar {
-  const toolbar: UseTableToolbar = { items: [] }
-  if (Array.isArray(rawToolbar)) {
-    toolbar.items = rawToolbar
-  }
-  if (typeof rawToolbar === 'object') {
-    Object.assign(rawToolbar, toolbar)
-  }
-  return toolbar
-}

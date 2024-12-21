@@ -8,17 +8,46 @@ import { AnTable, defineTablePlugin } from './table'
 declare module './table' {
   type UseTableSearchItem = UseFormItem & {}
   interface UseTableSearch extends Omit<UseFormOptions, 'submit' | 'name' | 'items' | 'modal'> {
+    /**
+     * 是否可见
+     */
     visible?: (form: UseTableSearch) => boolean
+    /**
+     * 表单项
+     */
     items?: UseTableSearchItem[]
   }
   interface AnTableConfigSearch extends AnFormConfig {
+    /**
+     * 当隐藏标签时，是否使用标签作为输入提示。
+     * @default
+     * ```ts
+     * true
+     * ```
+     */
     labelAsPlacecholder: boolean
   }
   interface UseTableOptions {
+    /**
+     * 公用表单项，搜索表单，新增表单，更新表单根据 `field` 字段复用。
+     * @see useForm.item
+     */
+    items?: UseFormItem[]
+    /**
+     * 搜索表单项或搜索表单
+     * @see useForm
+     */
     search?: UseTableSearch | UseTableSearchItem[]
   }
   interface AnTable {
-    getSearchForm(): AnForm | undefined
+    /**
+     * 获取搜索表单
+     * @example
+     * ```ts
+     * getSearchForm()?.validate() // 检验表单
+     * ```
+     */
+    getSearchForm: () => AnForm | undefined
   }
   interface AnTableConfig {
     search: AnTableConfigSearch
@@ -27,6 +56,19 @@ declare module './table' {
 
 AnTable.prototype.getSearchForm = function () {
   return this.shared.search
+}
+
+export function defaultsItems(items: UseFormItem[], source: UseFormItem[]) {
+  if (!source.length) {
+    return items
+  }
+  const map = source.reduce((m, v) => ((m[v.field] = v), m), {} as Record<string, UseFormItem>)
+  return items.map(item => {
+    if (!map[item.field]) {
+      return item
+    }
+    return defaultsDeep(item, map[item.field])
+  })
 }
 
 function itemRender(this: AnTable) {
@@ -44,17 +86,18 @@ function searchPlugin(this: AnTable): AnFormPlugin {
   const tableCfg = this.config
   const labled = tableCfg.search.labelAsPlacecholder
   const submitRender = () => (
-    <Button
-      type="primary"
-      style="position: relative; bottom: 1px"
-      loading={table.loading()}
-      onClick={() => table.load()}
-    >
-      {{
-        icon: () => <IconSearch></IconSearch>,
-        default: () => '搜索',
-      }}
-    </Button>
+    <>
+      {/* <Button disabled={table.loading()}>
+        {{
+          icon: () => <IconRefresh />,
+        }}
+      </Button> */}
+      <Button type="primary" loading={table.loading()} onClick={() => table.load()}>
+        {{
+          icon: () => <IconSearch></IconSearch>,
+        }}
+      </Button>
+    </>
   )
   return {
     name: 'search',
@@ -69,43 +112,57 @@ function searchPlugin(this: AnTable): AnFormPlugin {
           hasSubmit = true
         }
       }
-      if (!hasSubmit) {
-        this.options.items.push({
-          field: '',
-          setter: 'submit',
-          itemSlots: {
-            default: submitRender,
-          },
-        })
+      if (!this.config.autoSubmitItem) {
+        return
       }
+      if (hasSubmit) {
+        return
+      }
+      this.options.items.push({
+        field: '',
+        setter: 'submit',
+        itemProps: {
+          style: {
+            marginRight: '0',
+          },
+        },
+        itemSlots: {
+          default: submitRender,
+        },
+      })
     },
   }
 }
 
 export default defineTablePlugin({
   name: 'search',
-  onOptions(options) {
-    let search = options.search
-    if (!search) {
+  onOptionsBefore() {
+    if (!this.options.search) {
       return
     }
-    search = options.search = Array.isArray(search) ? { items: search } : search
-    search.config = defaultsDeep((search.config ??= {}), this.config.search)
-    search.plugins ??= []
-    search.plugins.push(searchPlugin.bind(this)())
-    this.shared.search = useForm(search)
-  },
-  onOptionsAfter() {
-    this.state.toolbar.items.push({
-      key: 'search',
-      props: {},
-      slots: {},
-      order: 50,
+    this.options.toolbar ??= []
+    this.options.toolbar.push({
+      // type: 'search',
+      sort: 75,
       render: itemRender.bind(this),
     })
   },
+  onOptions(options) {
+    if (!options.search) {
+      return
+    }
+    let search = options.search
+    search = options.search = Array.isArray(search) ? { items: search } : search
+    search.config = defaultsDeep((search.config ??= {}), this.config.search)
+    search.items = defaultsItems(search.items ?? [], options.items ?? [])
+    search.plugins ??= []
+    search.plugins.push(searchPlugin.bind(this)())
+    this.shared.search = useForm(search as UseFormOptions)
+  },
   onLoadBefore(params) {
-    const model = this.getSearchForm()!.getModel()
-    defaultsDeep(params, model)
+    if (!this.shared.search) {
+      return
+    }
+    defaultsDeep(params, this.shared.search.getModel())
   },
 })

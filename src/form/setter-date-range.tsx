@@ -20,7 +20,7 @@ declare module './form' {
 
 function render(this: AnForm, item: AnFormItem, model: Recordable) {
   return (
-    <RangePicker {...item.setterProps} v-model={model[item.field]}>
+    <RangePicker {...item.setterProps}>
       {{ ...item.setterSlots }}
     </RangePicker>
   )

@@ -19,11 +19,7 @@ declare module './form' {
 }
 
 function render(this: AnForm, item: AnFormItem, model: Recordable) {
-  return (
-    <InputPassword {...item.setterProps} v-model={model[item.field]}>
-      {{ ...item.setterSlots }}
-    </InputPassword>
-  )
+  return <InputPassword {...item.setterProps}>{{ ...item.setterSlots }}</InputPassword>
 }
 
 export default defineFormPlugin({

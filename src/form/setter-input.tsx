@@ -1,6 +1,5 @@
 import { Input, InputInstance } from '@arco-design/web-vue'
 import { defaultsDeep } from 'lodash-es'
-import { Recordable } from '../core'
 import type { AnFormItem } from './form'
 import { AnForm, defineFormPlugin } from './form'
 
@@ -18,9 +17,9 @@ declare module './form' {
   }
 }
 
-function render(this: AnForm, item: AnFormItem, model: Recordable) {
+function render(this: AnForm, item: AnFormItem) {
   return (
-    <Input {...item.setterProps} v-model={model[item.field]} placeholder={this.t(item.placeholder)}>
+    <Input {...item.setterProps}>
       {{ ...item.setterSlots }}
     </Input>
   )

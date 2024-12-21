@@ -3,38 +3,141 @@
     <div class="head">
       <button @click="showColumn = !showColumn">隐藏</button>
     </div>
+    <!-- <FeForm></FeForm> -->
     <TestTable ref="ins">
       <template #test> 我是测试插槽 </template>
       <template #column:name="data: {}"> 测试 column {{ data }} </template>
       <template #table:pagination-left> table pagination-left </template>
     </TestTable>
-    <FeForm></FeForm>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import '@arco-design/web-vue/dist/arco.min.css'
 import { onMounted, ref } from 'vue'
-import { useForm } from '../src/form'
+import { useForm } from '../src'
+import { TestTable } from './table';
 
 const showColumn = ref(false)
 const ins = ref(null)
 
 const FeForm = useForm({
-  // modal: {},
+  formProps: {
+    // layout: 'horizontal',
+    // autoLabelWidth: true,
+    // labelAlign: 'left',
+    style: {
+      width: '286px',
+    },
+  },
+  model: {
+    inner: {
+      name: 'todo'
+    }
+  },
   items: [
     {
-      field: 'todo',
-      label: '测试',
+      field: 'inner.name',
+      label: '输入框',
+      setter: 'input',
+    },
+    {
+      field: 'password',
+      label: '密码框',
+      setter: 'password',
+    },
+    {
+      field: 'search',
+      label: '搜索框',
+      setter: 'search',
+    },
+    {
+      field: 'textarea',
+      label: '文本框',
+      setter: 'textarea',
+    },
+    {
+      field: 'mediaType1',
+      label: '日期框',
+      setter: 'date',
+    },
+    {
+      field: 'mediaType2',
+      label: '时间框',
+      setter: 'time',
+    },
+    {
+      field: '[start,end]',
+      label: '日期范围框',
+      setter: 'dateRange',
+    },
+    {
+      field: 'cascader',
+      label: '时间框',
+      setter: 'cascader',
+    },
+    {
+      field: 'number',
+      label: '数字框',
+      setter: 'number',
+    },
+    {
+      field: 'select',
+      label: '选择框',
+      setter: 'select',
+      options: [
+        {
+          label: '视频',
+          value: 1,
+        },
+        {
+          label: '图片',
+          value: 2,
+        },
+      ],
     },
     {
       field: 'todo1',
       label: '测试',
-      setter: 'password',
-      visible: showColumn,
+      setter: 'select',
+      // visible: showColumn,
+      options() {
+        return [
+          {
+            label: '青',
+            value: 1,
+          },
+          {
+            label: '白',
+            value: 2,
+          },
+        ]
+      },
+    },
+    {
+      field: 'todo12',
+      label: '测试1',
+      setter: 'select',
+      // visible: showColumn,
+      options: {
+        load() {
+          return [
+            {
+              label: '青',
+              value: 1,
+            },
+            {
+              label: '白',
+              value: 2,
+            },
+          ]
+        },
+        loadOn: false,
+      },
     },
   ],
-  submit(model) {
+  async submit(model) {
+    await new Promise(res => setTimeout(res, 3000))
     console.log(model)
   },
 })
@@ -45,155 +148,10 @@ onMounted(() => {
   console.log(ins.value)
 })
 
-// console.time('dd')
-// const TestTable = useTable({
-//   config: {
+console.time('dd')
 
-//   },
-//   data: async (params) => {
-//     console.log('params: ', params);
-//     await new Promise(res => setTimeout(res, 2000))
-//     return [
-//       {
-//         id: 1,
-//         name: 'todo'
-//       }
-//     ]
-//   },
-//   columns: [
-//     {
-//       title: '名字',
-//       dataIndex: 'name1',
-//       visible: () => showColumn.value,
-//     },
-//     {
-//       title: '名字1',
-//       dataIndex: 'name',
-//     },
-//   ],
-//   search: [
-//     {
-//       field: 'todo',
-//       label: '测试',
-//       setter: 'input',
-//     },
-//     {
-//       field: 'todo1',
-//       label: '测试',
-//       setter: 'password'
-//     },
-//     {
-//       field: 'gender',
-//       label: '性别',
-//       setter: 'select',
-//       required: true,
-//       options: [
-//         {
-//           label: '男',
-//           value: 1,
-//         },
-//         {
-//           label: '女',
-//           value: 0,
-//         }
-//       ]
-//     },
-//     {
-//       field: 'gender1',
-//       label: '性别',
-//       setter: 'select',
-//       required: true,
-//       options: () => [
-//         {
-//           label: '男',
-//           value: 1,
-//         },
-//         {
-//           label: '女',
-//           value: 0,
-//         }
-//       ]
-//     },
-//     {
-//       field: 'gender2',
-//       label: '性别',
-//       setter: 'select',
-//       required: true,
-//       options: {
-//         load: () => [
-//           {
-//             label: '男',
-//             value: 1,
-//           },
-//           {
-//             label: '女',
-//             value: 0,
-//           }
-//         ],
-//         loadOn: false
-//       }
-//     },
-
-//   ],
-//   create: {
-//     items: [
-//       {
-//         field: 'todo',
-//         label: '测试',
-//         setter: 'input'
-//       },
-//       {
-//         field: 'todo1',
-//         label: '测试',
-//         setter: 'password'
-//       },
-//     ]
-//   },
-//   update: {
-//     items: [
-//       {
-//         field: 'todo',
-//         label: '测试',
-//         setter: 'input'
-//       },
-//       {
-//         field: 'todo1',
-//         label: '测试',
-//         setter: 'password'
-//       },
-//     ]
-//   },
-//   toolbar: [
-//     {
-//       text: '测试1',
-//       disable: showColumn,
-//       onClick() {
-//         TestTable.openUpdateModal()
-//       }
-//     },
-//     {
-//       text: '测试2',
-//       disable: showColumn,
-//       visible: () => showColumn.value,
-//     },
-//     {
-//       text: '测试3',
-//       disable: showColumn,
-//     },
-//     {
-//       text: '测试4',
-//       disable: showColumn,
-//       visible: () => showColumn.value,
-//     },
-//     {
-//       text: '测试5',
-//       disable: showColumn,
-//     },
-//   ],
-
-// })
-// console.timeEnd('dd')
-// console.log(TestTable)
+console.timeEnd('dd')
+console.log(TestTable)
 
 // setTimeout(() => {
 //   TestTable.setData([

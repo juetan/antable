@@ -19,22 +19,13 @@ declare module './form' {
 }
 
 function render(this: AnForm, item: AnFormItem, model: Recordable) {
-  return (
-    <InputSearch
-      {...item.setterProps}
-      v-model={model[item.field]}
-      // @ts-ignore
-      placeholder={this.t(item.placeholder)}
-    >
-      {{ ...item.setterSlots }}
-    </InputSearch>
-  )
+  return <InputSearch {...item.setterProps}>{{ ...item.setterSlots }}</InputSearch>
 }
 
 export default defineFormPlugin({
   name: 'search',
   onOptionsItemBefore(item) {
-    if (item.setter !== 'password') {
+    if (item.setter !== 'search') {
       return
     }
     defaultsDeep(item, this.config.search)

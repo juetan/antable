@@ -1,26 +1,20 @@
 import { Select, SelectInstance } from '@arco-design/web-vue'
 import { defaultsDeep } from 'lodash-es'
 import { onMounted } from 'vue'
-import { MaybePromise, Recordable } from '../core'
+import { MaybePromise } from '../core'
 import type { AnFormItem, UseFormSelectItemOptions } from './form'
 import { AnForm, defineFormPlugin } from './form'
 
 declare module './form' {
   interface UseFormSelectItemOptions {
     /**
-     * 用于加载数据的函数，应返回数组
+     * 加载数据的函数
      * @example
      * ```ts
-     * async load() {
-     *   const data = await api.getUserSelectOptions()
-     *   return data.map(item => {
-     *     label: item.nickename,
-     *     value: item.id,
-     *   })
-     * }
+     * () => []
      * ```
      */
-    load?: (item: AnFormItem) => MaybePromise<AnFormSelectOption[]>
+    load?: (item: AnFormItem) => MaybePromise<any[]>
     /**
      * 什么情况下加载
      * @default
@@ -29,18 +23,20 @@ declare module './form' {
      * ```
      */
     loadOn?: 'mounted' | 'setup' | false
-    custom?: boolean
-  }
-  interface AnFormSelectOption {
-    label: string
-    value: any
-    raw?: any
   }
   interface UseFormItemSelect extends UseFormItemBase {
-    options?: AnFormSelectOption[] | UseFormSelectItemOptions['load'] | UseFormSelectItemOptions
     setter: 'select'
     setterProps?: SelectInstance['$props']
     setterSlots?: AnFormItemSlotMapping<'prepend' | 'append' | 'suffix' | 'prefix'>
+    /**
+     * 选项源，可以是数组，函数或更复杂的对象
+     * @by select
+     * @example
+     * ```ts
+     * [{ label: '视频', value: 1 }]
+     * ```
+     */
+    options?: any[] | UseFormSelectItemOptions['load'] | UseFormSelectItemOptions
   }
   interface UseFormItems {
     select: UseFormItemSelect
@@ -64,25 +60,17 @@ AnForm.prototype.loadOptions = function () {
   this.state.items.forEach(loadOption)
 }
 
-function render(this: AnForm, item: AnFormItem, model: Recordable) {
-  return (
-    <Select {...item.setterProps} v-model={model[item.field]} placeholder={this.t(item.placeholder)}>
-      {{ ...item.setterSlots }}
-    </Select>
-  )
+function render(this: AnForm, item: AnFormItem) {
+  return <Select {...item.setterProps}>{{ ...item.setterSlots }}</Select>
 }
 
 async function loadOption(item: AnFormItem) {
   const options = item.shared.options as UseFormSelectItemOptions
-  if (!options) {
+  if (!options || !options.load) {
     return
   }
-  if (options.custom) {
-    return options.load?.(item)
-  }
-  if (options.load) {
-    const result = await options.load(item)
-    if (!Array.isArray(result)) return
+  const result = await options.load(item)
+  if (Array.isArray(result)) {
     item.setterProps ??= {}
     item.setterProps.options = result
   }
@@ -117,15 +105,17 @@ export default defineFormPlugin({
     if (item.setter !== 'select') {
       return
     }
-    const options = item.shared.options
-    if (!options) {
+    if (!item.shared.options) {
       return
     }
+    const options = item.shared.options
     if (options.loadOn === 'setup') {
-      return loadOption(item)
+      loadOption(item)
+      return
     }
     if (options.loadOn === 'mounted') {
-      return onMounted(() => loadOption(item))
+      onMounted(() => loadOption(item))
+      return
     }
-  }
+  },
 })

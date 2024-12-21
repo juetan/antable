@@ -1,6 +1,5 @@
 import { Cascader, CascaderInstance } from '@arco-design/web-vue'
 import { defaultsDeep } from 'lodash-es'
-import { Recordable } from '../core'
 import type { AnFormItem } from './form'
 import { AnForm, defineFormPlugin } from './form'
 
@@ -20,12 +19,8 @@ declare module './form' {
   }
 }
 
-function render(this: AnForm, item: AnFormItem, model: Recordable) {
-  return (
-    <Cascader {...item.setterProps} v-model={model[item.field]} placeholder={this.t(item.placeholder)}>
-      {{ ...item.setterSlots }}
-    </Cascader>
-  )
+function render(this: AnForm, item: AnFormItem) {
+  return <Cascader {...item.setterProps}>{{ ...item.setterSlots }}</Cascader>
 }
 
 export default defineFormPlugin({

@@ -20,7 +20,7 @@ declare module './form' {
 
 function render(this: AnForm, item: AnFormItem, model: Recordable) {
   return (
-    <InputNumber {...item.setterProps} v-model={model[item.field]} placeholder={AnForm.t(item.placeholder!)}>
+    <InputNumber {...item.setterProps}>
       {{ ...item.setterSlots }}
     </InputNumber>
   )

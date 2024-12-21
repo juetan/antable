@@ -32,7 +32,7 @@ export default defineFormPlugin({
     if (item.setter !== 'textarea') {
       return
     }
-    item = defaultsDeep(item, this.config.textarea)
+    defaultsDeep(item, this.config.textarea)
     item.itemSlots ??= {}
     item.itemSlots.default ??= render.bind(this)
   },
